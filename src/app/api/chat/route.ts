@@ -1,4 +1,4 @@
-import { streamText } from "ai";
+import { streamText, UIMessage, convertToModelMessages } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 const google = createGoogleGenerativeAI({
@@ -23,12 +23,13 @@ THE ARCHITECTURAL LAW: Map intent onto a quantitative axis. Use (+, -, *, /) to 
 WEAPONIZED LITERALISM: Use humor only as a laser scalpel to shatter ego.`;
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages } = (await req.json()) as { messages: UIMessage[] };
+  const modelMessages = await convertToModelMessages(messages);
 
   const result = streamText({
     model: google("gemini-1.5-flash"),
     system: SYSTEM_PROMPT,
-    messages,
+    messages: modelMessages,
     providerOptions: {
       google: {
         safetySettings: [
